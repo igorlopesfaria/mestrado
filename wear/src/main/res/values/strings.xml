@@ -1,0 +1,22 @@
+<resources>
+    <string name="app_name">Fit Recognition</string>
+    <string name="title_activity_option">OptionActivity</string>
+
+    <string name="walking">Andar</string>
+    <string name="running">Correr</string>
+    <string name="empty">-------</string>
+    <string name="collect_dataset_training">Dataset</string>
+    <string name="execute_experiment">Experimento</string>
+    <string name="insert_identifier">Insira o identificador</string>
+
+    <string name="select_type_experiment">Selecione o tipo do Experimento</string>
+    <string name="select_type_exercise">Selecione o exercício que será coletado o dataset</string>
+    <string name="to_select_exercise_select_dataset">Para selecionar Exercício escolha o Experimento do tipo Coletar Dataset!</string>
+
+    <string name="identifier">Identificador</string>
+    <string name="type_experiment">Tipo de Experimento</string>
+    <string name="type_exercise">Tipo de Exercício</string>
+
+
+
+</resources>
