@@ -66,9 +66,6 @@ public class MainActivity extends BaseActivity  implements
 
         init();
 
-        getAppPreference().setKeyPrefsIdentifier("Igor");
-                getAppPreference().setKeyPrefsTypeExperiment(null);
-                        getAppPreference().setKeyPrefsTypeExercise(null);
         accelerometerReader = new AccelerometerReader();
         gyroscopeReader = new GyroscopeReader();
         magnetometerReader = new MagnetometerReader();
@@ -221,7 +218,7 @@ public class MainActivity extends BaseActivity  implements
     protected void onResume() {
         super.onResume();
         mGoogleApiClient.connect();
-        if(getAppPreference().getKeyPrefsTypeExercise()!=null && !"".equalsIgnoreCase(getAppPreference().getKeyPrefsTypeExercise())) {
+        if(getAppPreference().getKeyPrefsIdentifier()!=null && !"".equalsIgnoreCase(getAppPreference().getKeyPrefsIdentifier())) {
             identifierTX.setText(getAppPreference().getKeyPrefsIdentifier());
         }
 
