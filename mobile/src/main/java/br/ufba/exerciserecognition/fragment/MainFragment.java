@@ -1,9 +1,12 @@
 package br.ufba.exerciserecognition.fragment;
 
+import android.content.Context;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.os.Environment;
 import android.os.SystemClock;
+import android.os.Vibrator;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -55,8 +58,9 @@ public class MainFragment extends BaseFragment {
 
     private EditText nameETX;
     private View view;
+    Vibrator vibrator;
 
-    private Boolean  isRunning;
+    private Boolean  waiting = false;
 
     public MainFragment() {
         // Required empty public constructor
@@ -101,7 +105,10 @@ public class MainFragment extends BaseFragment {
         onBTN.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                
+                if(waiting)
+                    return;
+
+                getBaseActivity().hideKeyboard();
                 String identifier = nameETX.getText().toString().trim();
                 if("".equals(identifier)){
                     showSnackBar(v, getString(R.string.insert_identifier), Snackbar.LENGTH_LONG, android.R.color.white, android.R.color.holo_red_dark);
@@ -115,21 +122,38 @@ public class MainFragment extends BaseFragment {
                 }
 
                 String typeExercise = (String) typeExerciseSP.getSelectedItem();
-                if(getString(R.string.collect_dataset_training).equalsIgnoreCase(typeExperiment) && getString(R.string.select_exercise).equalsIgnoreCase(typeExercise)){
+                if(getString(R.string.select_exercise).equalsIgnoreCase(typeExercise)){
                     showSnackBar(v, getString(R.string.select_type_exercise), Snackbar.LENGTH_LONG, android.R.color.white, android.R.color.holo_red_dark);
                     return;
                 }
 
-                chronometer.setBase(SystemClock.elapsedRealtime());
-                chronometer.start();
-                typeExperimentSP.setEnabled(false);
-                typeExerciseSP.setEnabled(false);
-                nameETX.setEnabled(false);
-                accelerometerReader.initialize(getBaseActivity());
-                gyroscopeReader.initialize(getBaseActivity());
-                magnetometerReader.initialize(getBaseActivity());
-                offBTN.setVisibility(View.VISIBLE);
-                onBTN.setVisibility(View.GONE);
+                new CountDownTimer(15000, 1000) {
+
+                    public void onTick(long millisUntilFinished) {
+                        long seconds = millisUntilFinished / 1000;
+                        waiting = true;
+                        getBaseActivity().showProgress("Aguarde... "+seconds+" seg");
+                    }
+
+                    public void onFinish() {
+                        waiting= false;
+                        getBaseActivity().hideProgress();
+                        chronometer.setBase(SystemClock.elapsedRealtime());
+                        chronometer.start();
+                        vibrator.vibrate(1000);
+
+                        typeExperimentSP.setEnabled(false);
+                        typeExerciseSP.setEnabled(false);
+                        nameETX.setEnabled(false);
+                        accelerometerReader.initialize(getBaseActivity());
+                        gyroscopeReader.initialize(getBaseActivity());
+                        magnetometerReader.initialize(getBaseActivity());
+                        offBTN.setVisibility(View.VISIBLE);
+                        onBTN.setVisibility(View.GONE);
+
+                    }
+
+                }.start();
 
             }
         });
@@ -137,27 +161,7 @@ public class MainFragment extends BaseFragment {
         offBTN.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                chronometer.stop();
-                typeExperimentSP.setEnabled(true);
-                typeExerciseSP.setEnabled(true);
-                nameETX.setEnabled(true);
-
-                accelerometerReader.unregisterSensor();
-                gyroscopeReader.unregisterSensor();
-                magnetometerReader.unregisterSensor();
-
-                lGyroscope = gyroscopeReader.getData();
-                lAccelerometer = accelerometerReader.getData();
-                lMagnetometer = magnetometerReader.getData();
-
-                exportFile(lAccelerometer,1);
-                exportFile(lGyroscope,2);
-                exportFile(lMagnetometer,3);
-
-                exportFile(lAccelerometer, lGyroscope,lMagnetometer );
-                offBTN.setVisibility(View.GONE);
-                onBTN.setVisibility(View.VISIBLE);
-
+               stopChronometer();
             }
         });
 
@@ -167,22 +171,8 @@ public class MainFragment extends BaseFragment {
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 if(position==0){
                     ((TextView) parent.getChildAt(0)).setTextColor(Color.LTGRAY);
-                    typeExerciseSP.setVisibility(View.GONE);
-                    arrow2IMG.setVisibility(View.GONE);
-
                 }else{
                     ((TextView) parent.getChildAt(0)).setTextColor(getResources().getColor(R.color.colorPrimary));
-                    if(position==1) {
-                        typeExerciseSP.setVisibility(View.VISIBLE);
-                        arrow2IMG.setVisibility(View.VISIBLE);
-                    }else {
-                        typeExerciseSP.setVisibility(View.GONE);
-                        exerciseIMG.setVisibility(View.GONE);
-                        arrow2IMG.setVisibility(View.GONE);
-
-                    }
-
-
                 }
 
 
@@ -216,8 +206,61 @@ public class MainFragment extends BaseFragment {
 
             }
         });
+
+        chronometer.setOnChronometerTickListener(new Chronometer.OnChronometerTickListener() {
+
+            @Override
+            public void onChronometerTick(Chronometer chronometer) {
+                // TODO Auto-generated method stub
+                String typeExperiment = (String) typeExperimentSP.getSelectedItem();
+                String currentTime = chronometer.getText().toString();
+                boolean stop = false;
+                if (typeExperiment.equalsIgnoreCase(getString(R.string.collect_dataset_training)) && currentTime.equals("02:00")){
+//                    offBTN.performClick();
+                    stop = true;
+                }else if(typeExperiment.equalsIgnoreCase(getString(R.string.execute_experiment)) && currentTime.equals("00:05")) {
+//                    offBTN.performClick();
+                    stop = true;
+                }
+
+                if (stop) {
+                    stopChronometer();
+                }
+            }
+        });
     }
 
+    private void stopChronometer() {
+        chronometer.stop();
+        vibrator.vibrate(1000);
+
+        typeExperimentSP.setEnabled(true);
+        typeExerciseSP.setEnabled(true);
+        nameETX.setEnabled(true);
+
+        getBaseActivity().showProgress(getString(R.string.stopping_collect));
+
+        accelerometerReader.unregisterSensor();
+        gyroscopeReader.unregisterSensor();
+        magnetometerReader.unregisterSensor();
+
+        lGyroscope = gyroscopeReader.getData();
+        lAccelerometer = accelerometerReader.getData();
+        lMagnetometer = magnetometerReader.getData();
+
+        getBaseActivity().showProgress(getString(R.string.creating_accelerometer));
+        exportFile(lAccelerometer,1);
+        getBaseActivity().showProgress(getString(R.string.creating_gyroscope));
+        exportFile(lGyroscope,2);
+        getBaseActivity().showProgress(getString(R.string.creating_magnetometer));
+        exportFile(lMagnetometer,3);
+        getBaseActivity().showProgress(getString(R.string.creating_all_sensor_data));
+//              exportFile(lAccelerometer, lGyroscope,lMagnetometer );
+        offBTN.setVisibility(View.GONE);
+        onBTN.setVisibility(View.VISIBLE);
+        getBaseActivity().hideProgress();
+
+    }
 
 
     private void init(View view) {
@@ -234,14 +277,15 @@ public class MainFragment extends BaseFragment {
         nameETX = (EditText) view.findViewById(R.id.nameETX);
         
         String[] items = new String[]{getString(R.string.select_experiment), getString(R.string.collect_dataset_training), getString(R.string.execute_experiment)};
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(getBaseActivity(), R.layout.item_spiner, items);
+        ArrayAdapter<String> adapter = new ArrayAdapter(getBaseActivity(), R.layout.item_spiner, items);
         typeExperimentSP.setAdapter(adapter);
 
 
         String[] items2 = new String[]{getString(R.string.select_exercise), getString(R.string.running), getString(R.string.walking)};
-        ArrayAdapter<String> adapter2 = new ArrayAdapter<String>(getBaseActivity(), R.layout.item_spiner, items2);
+        ArrayAdapter<String> adapter2 = new ArrayAdapter(getBaseActivity(), R.layout.item_spiner, items2);
         typeExerciseSP.setAdapter(adapter2);
 
+        vibrator = (Vibrator) getBaseActivity().getSystemService(Context.VIBRATOR_SERVICE);
 
 
     }
@@ -249,23 +293,28 @@ public class MainFragment extends BaseFragment {
 
     private void exportFile(List<SensorBase> lSensor, int id){
         try {
-            getBaseActivity().getProgressBar().setVisibility(View.VISIBLE);
+
+            if(!isExternalStorageWritable()){
+                showSnackBar(view, getString(R.string.problem_generate_file), Snackbar.LENGTH_LONG, android.R.color.white, android.R.color.holo_red_dark);
+                return;
+            }
+
             String typeExercise = (String) typeExerciseSP.getSelectedItem();
             String typeExperiment = (String) typeExperimentSP.getSelectedItem();
 
             String folderTypeExperiment = "DataSet";
             if(!typeExperiment.equalsIgnoreCase(getString(R.string.collect_dataset_training))) {
-                folderTypeExperiment = "Experiment";
-                typeExercise = "";
-
+                folderTypeExperiment = "Experimento";
             }
 
-            File folder = new File(Environment.getExternalStorageDirectory()+ "/ExcerciseRecognition/mobile"+"/"+folderTypeExperiment);
+            File folder = new File(Environment.getExternalStorageDirectory()+ "/ExerciseRecognition/mobile");
 
             if (!folder.exists())
-                folder.mkdir();
+                folder.mkdirs();
+
             String identifier = nameETX.getText().toString().trim();
-            String SensorType = "";
+
+            String SensorType;
             if(id==1)
                 SensorType = "Accelerometer";
             else if(id==2)
@@ -274,7 +323,7 @@ public class MainFragment extends BaseFragment {
                 SensorType = "Magnetometer";
 
 
-            final String filename = folder.getAbsolutePath().toString() + "/"+identifier+"_"+ SensorType+ typeExercise+".csv";
+            final String filename = folder.getAbsolutePath().toString() + "/"+identifier+"_"+folderTypeExperiment+"_"+ SensorType+"_"+ typeExercise+".csv";
 
             String content="";
 
@@ -293,7 +342,7 @@ public class MainFragment extends BaseFragment {
                         content+=sensorBase.getZ().toString();
 
 
-                    content += " ,";
+                    content += "; ";
                 }
                 if(!typeExperiment.equalsIgnoreCase(getString(R.string.collect_dataset_training)))
                     typeExercise = "?";
@@ -308,87 +357,18 @@ public class MainFragment extends BaseFragment {
         }
         catch (IOException ioe){
             ioe.printStackTrace();
+            showSnackBar(view, getString(R.string.problem_generate_file), Snackbar.LENGTH_LONG, android.R.color.white, android.R.color.holo_red_dark);
+
         }
-        getBaseActivity().getProgressBar().setVisibility(View.GONE);
 
     }
 
-    private void exportFile(List<SensorBase> lAccelerometer,
-                            List<SensorBase> lGyroscope,
-                            List<SensorBase> lMagnetometer) {
-
-        try {
-            getBaseActivity().getProgressBar().setVisibility(View.VISIBLE);
-            String typeExercise = (String) typeExerciseSP.getSelectedItem();
-            String typeExperiment = (String) typeExperimentSP.getSelectedItem();
-
-            String folderTypeExperiment = "DataSet";
-            if(!typeExperiment.equalsIgnoreCase(getString(R.string.collect_dataset_training))) {
-                folderTypeExperiment = "Experiment";
-                typeExercise = "";
-            }
-
-            File folder = new File(Environment.getExternalStorageDirectory()+ "/ExcerciseRecognition/mobile"+"/"+folderTypeExperiment);
-
-            if (!folder.exists())
-                folder.mkdir();
-
-
-            int size = lAccelerometer.size();
-
-            if(size>lGyroscope.size())
-                size = lGyroscope.size();
-            if(size>lMagnetometer.size())
-                size = lMagnetometer.size();
-            String identifier = nameETX.getText().toString().trim();
-
-
-            final String filename = folder.getAbsolutePath().toString() +"/"+identifier+"_"+"AllSensors"+ typeExercise+".csv";
-            String content="";
-
-            FileOutputStream fOut = new FileOutputStream (new File(filename), true); // true will be same as Context.MODE_APPEND
-            OutputStreamWriter osw = new OutputStreamWriter(fOut);
-
-
-            // Write the string to the file
-            for(int i= 0 ; i< size; i++) {
-
-                content += lAccelerometer.get(i).getX().toString();
-                content += " ,";
-                content += lAccelerometer.get(i).getY().toString();
-                content += " ,";
-                content += lAccelerometer.get(i).getZ().toString();
-                content += " ,";
-
-                content += lGyroscope.get(i).getX().toString();
-                content += " ,";
-                content += lGyroscope.get(i).getY().toString();
-                content += " ,";
-                content += lGyroscope.get(i).getZ().toString();
-                content += " ,";
-
-                content += lMagnetometer.get(i).getX().toString();
-                content += " ,";
-                content += lMagnetometer.get(i).getY().toString();
-                content += " ,";
-                content += lMagnetometer.get(i).getZ().toString();
-
-                if (!typeExperiment.equalsIgnoreCase(getString(R.string.collect_dataset_training)))
-                    typeExercise = "?";
-
-
-                content = content + " ," + typeExercise + "\n";
-            }
-            Log.v("AllSensors content is ", content);
-            osw.write(content);
-            osw.flush();
-            osw.close();
-
+    public boolean isExternalStorageWritable() {
+        String state = Environment.getExternalStorageState();
+        if (Environment.MEDIA_MOUNTED.equals(state)) {
+            return true;
         }
-        catch (IOException ioe) {
-            ioe.printStackTrace();
-        }
-        getBaseActivity().getProgressBar().setVisibility(View.GONE);
-
+        return false;
     }
+
 }

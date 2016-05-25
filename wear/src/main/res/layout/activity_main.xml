@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_height="match_parent"
     android:layout_width="match_parent"
-    android:background="@color/white">
+    android:background="@color/grayLight">
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -25,7 +25,7 @@
         <ImageButton
             android:id="@+id/playBTN"
             android:layout_height="45dp"
-            android:layout_width="90dp"
+            android:layout_width="match_parent"
             android:background="@drawable/button_primary_color"
             android:textColor="@color/white"
             android:src="@drawable/play"
@@ -41,7 +41,7 @@
             android:background="@drawable/button_primary_color"
             android:textColor="@color/white"
             android:src="@drawable/stop"
-            android:layout_width="90dp"
+            android:layout_width="match_parent"
             android:layout_alignParentBottom="true"
             android:layout_centerHorizontal="true" />
 
@@ -99,6 +99,33 @@
             android:layout_alignParentTop="true"
             android:layout_alignParentLeft="true"
             android:layout_alignParentStart="true" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/progressBox"
+            android:background="@drawable/background_white_rounded"
+            android:padding="20dp"
+            android:visibility="gone"
+            android:orientation="vertical"
+            android:layout_centerInParent="true">
+
+            <ProgressBar
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/progressBar2"
+                android:layout_gravity="center"
+                android:indeterminate="true"
+                android:indeterminateTintMode="src_atop"
+                android:indeterminateTint="@color/colorPrimary"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/colorPrimaryDark"
+                android:id="@+id/progressText"/>
+
+        </LinearLayout>
     </RelativeLayout>
 </android.support.wearable.view.BoxInsetLayout>
 

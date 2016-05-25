@@ -42,22 +42,26 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="54dp"
         android:layout_below="@+id/chronometer"
+        android:orientation="vertical"
         android:gravity="center">
         <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:layout_height="54dp"
             android:text="PLAY"
+            android:textSize="22dp"
             android:textColor="@android:color/white"
             android:background="@drawable/button_primary_color"
             android:id="@+id/onBTN"
             />
 
         <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:layout_height="54dp"
             android:text="STOP"
+            android:textSize="22dp"
+
             android:id="@+id/offBTN"
             android:textColor="@android:color/white"
             android:background="@drawable/button_primary_color" />

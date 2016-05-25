@@ -2,6 +2,7 @@ package br.ufba.exerciserecognition;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.os.SystemClock;
 import android.support.wearable.activity.WearableActivity;
 import android.util.Log;
@@ -9,6 +10,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Chronometer;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -57,6 +59,7 @@ public class MainActivity extends BaseActivity  implements
     private MagnetometerReader magnetometerReader;
     private GoogleApiClient mGoogleApiClient;
     private ImageButton settingsBTN, playBTN, stopBTN;
+    private Boolean  waiting = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,6 +78,10 @@ public class MainActivity extends BaseActivity  implements
         playBTN.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
+                if(waiting)
+                    return;
+
                 String identifier = identifierTX.getText().toString().trim();
                 if("".equals(identifier) || getString(R.string.empty).equals(identifier)){
                     Toast.makeText(getApplicationContext(),getString(R.string.insert_identifier),
@@ -96,13 +103,32 @@ public class MainActivity extends BaseActivity  implements
                     return;
                 }
 
-                chronometer.setBase(SystemClock.elapsedRealtime());
-                chronometer.start();
-                accelerometerReader.initialize(getApplication());
-                gyroscopeReader.initialize(getApplication());
-                magnetometerReader.initialize(getApplication());
-                stopBTN.setVisibility(View.VISIBLE);
-                playBTN.setVisibility(View.GONE);
+
+                new CountDownTimer(10000, 1000) {
+
+                    public void onTick(long millisUntilFinished) {
+                        long seconds = millisUntilFinished / 1000;
+                        waiting = true;
+                        showProgress("Aguarde... "+seconds+" seg");
+                        //here you can have your logic to set text to edittext
+                    }
+
+                    public void onFinish() {
+                        waiting = false;
+
+                        hideProgress();
+
+                        chronometer.setBase(SystemClock.elapsedRealtime());
+                        chronometer.start();
+                        accelerometerReader.initialize(getApplication());
+                        gyroscopeReader.initialize(getApplication());
+                        magnetometerReader.initialize(getApplication());
+                        stopBTN.setVisibility(View.VISIBLE);
+                        playBTN.setVisibility(View.GONE);
+                    }
+
+                }.start();
+
 
             }
         });
@@ -141,7 +167,18 @@ public class MainActivity extends BaseActivity  implements
             }
         });
 
+        chronometer.setOnChronometerTickListener(new Chronometer.OnChronometerTickListener() {
 
+            @Override
+            public void onChronometerTick(Chronometer chronometer) {
+                String typeExperiment = (String) typeExperimentTX.getText();
+                String currentTime= chronometer.getText().toString();
+                if(typeExperiment.equalsIgnoreCase(getString(R.string.collect_dataset_training)) && currentTime.equals("02:00"))
+                    stopBTN.performClick();
+                else if(typeExperiment.equalsIgnoreCase(getString(R.string.execute_experiment)) && currentTime.equals("01:00"))
+                    stopBTN.performClick();
+            }
+        });
         //  getAppPreference().setKeyPrefsTypeExercise(elements[tag]);
     }
 
@@ -156,6 +193,10 @@ public class MainActivity extends BaseActivity  implements
         identifierTX= (TextView) findViewById(R.id.identifierTX);
         typeExerciseTX= (TextView) findViewById(R.id.typeExerciseTX);
         typeExperimentTX= (TextView)findViewById(R.id.typeExperimentTX);
+
+        setProgressBox((LinearLayout) findViewById(R.id.progressBox));
+        setProgressText((TextView) findViewById(R.id.progressText));
+
     }
 
     private void sendValues() {

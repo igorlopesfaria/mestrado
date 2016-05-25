@@ -14,6 +14,12 @@
     <string name="insert_identifier">Insira o identificador</string>
 
     <string name="select_type_experiment">Selecione o tipo do Experimento</string>
-    <string name="select_type_exercise">Selecione o exercício que será coletado o dataset</string>
+    <string name="select_type_exercise">Selecione o exercício que será executado</string>
+    <string name="stopping_collect">Parando de Coletar os dados...</string>
+    <string name="creating_accelerometer">Criando Arquivo do Acelerômetro...</string>
+    <string name="creating_gyroscope">Criando Arquivo do Giroscópio...</string>
+    <string name="creating_magnetometer">Criando Arquivo do Magnetômetro...</string>
+    <string name="creating_all_sensor_data">Criando Arquivo de todos os sensores juntos...</string>
+    <string name="problem_generate_file">Problema ao gerar arquivo! Repita  o procedimento.</string>
 
 </resources>

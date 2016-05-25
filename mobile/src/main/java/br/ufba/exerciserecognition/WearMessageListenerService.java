@@ -67,11 +67,9 @@ public class WearMessageListenerService extends WearableListenerService {
             String folderTypeExperiment = "Dataset";
             if(!typeExperiment.equalsIgnoreCase(folderTypeExperiment)) {
                 folderTypeExperiment = "Experimento";
-                typeExercise = "";
-
             }
 
-            File folder = new File(Environment.getExternalStorageDirectory()+ "/ExcerciseRecognition/wearable"+"/"+folderTypeExperiment);
+            File folder = new File(Environment.getExternalStorageDirectory()+ "/ExerciseRecognition/wearable"+"/"+folderTypeExperiment);
 
             if (!folder.exists())
                 folder.mkdir();

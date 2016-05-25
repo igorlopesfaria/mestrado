@@ -4,6 +4,7 @@ import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
@@ -16,6 +17,7 @@ public class MainActivity extends BaseActivity {
     private Fragment fragment;
     private Toolbar mToolbar;
     private TextView titleTX;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,7 +41,8 @@ public class MainActivity extends BaseActivity {
     private void initScreen() {
         mToolbar = (Toolbar) findViewById(R.id.toolbar);
         titleTX= (TextView) findViewById(R.id.titleTX);
-        setProgressBar((ProgressBar) findViewById(R.id.progressBar));
+        setProgressBox((LinearLayout) findViewById(R.id.progressBox));
+        setProgressText((TextView) findViewById(R.id.progressText));
 
         Typeface font = Typeface.createFromAsset(getAssets(), "fonts/AndroidScratch.ttf");
         titleTX.setTypeface(font);

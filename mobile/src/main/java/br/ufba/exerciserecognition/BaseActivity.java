@@ -3,8 +3,12 @@ package br.ufba.exerciserecognition;
 import android.app.Fragment;
 import android.content.Context;
 import android.support.v7.app.AppCompatActivity;
+import android.view.View;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
+import android.widget.TextView;
+
 import br.ufba.exerciserecognition.fragment.MainFragment;
 import br.ufba.exerciserecognition.fragment.SplashFragment;
 
@@ -15,9 +19,8 @@ import br.ufba.exerciserecognition.fragment.SplashFragment;
 public class BaseActivity extends AppCompatActivity {
 
     public Fragment actualFragment;
-    private ProgressBar progressBar;
-
-
+    private LinearLayout progressBox;
+    private TextView progressText;
 
     public void changeFragment(Fragment fragmentToChange) {
 
@@ -29,13 +32,6 @@ public class BaseActivity extends AppCompatActivity {
 
     }
 
-    public ProgressBar getProgressBar() {
-        return progressBar;
-    }
-
-    public void setProgressBar(ProgressBar progressBar) {
-        this.progressBar = progressBar;
-    }
 
     public void hideKeyboard() {
         InputMethodManager inputManager = (InputMethodManager)
@@ -54,6 +50,26 @@ public class BaseActivity extends AppCompatActivity {
             super.onBackPressed();
     }
 
+
+    public void setProgressBox(LinearLayout progressBox) {
+        this.progressBox = progressBox;
+    }
+
+    public void setProgressText(TextView progressText) {
+        this.progressText = progressText;
+    }
+
+    public void showProgress(String message) {
+        if (progressBox != null) {
+            progressText.setText(message);
+            progressBox.setVisibility(View.VISIBLE);
+        }
+    }
+
+    public void hideProgress() {
+        if (progressBox != null)
+            progressBox.setVisibility(View.GONE);
+    }
 
 
 }
