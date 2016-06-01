@@ -19,6 +19,7 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
+import br.ufba.exerciserecognition.dao.AppPreference;
 import br.ufba.exerciserecognition.model.SensorBase;
 
 /**
@@ -30,7 +31,11 @@ public class PhoneMessageListenerService extends WearableListenerService {
     @Override
     public void onMessageReceived(MessageEvent messageEvent) {
         if( messageEvent.getPath().equalsIgnoreCase( WEAR_PATH ) ) {
-            Log.v("TEST", new String(messageEvent.getData()));
+            String identifier ;
+            identifier = new String(messageEvent.getData());
+            Log.v("TEST",identifier );
+            AppPreference appPreference = new AppPreference(getApplicationContext());
+            appPreference.setKeyPrefsIdentifier(identifier);
 
         } else {
             super.onMessageReceived( messageEvent );

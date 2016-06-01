@@ -21,6 +21,7 @@ import java.io.OutputStreamWriter;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -89,6 +90,7 @@ public class WearMessageListenerService extends WearableListenerService {
 
             FileOutputStream fOut = new FileOutputStream (new File(filename), true);
             OutputStreamWriter osw = new OutputStreamWriter(fOut);
+            lastTime = null;
 
             for( SensorBase sensorBase: lSensor){
 
@@ -100,7 +102,7 @@ public class WearMessageListenerService extends WearableListenerService {
                     else if(j==2)
                         content+=sensorBase.getZ().toString();
                     else if(j==3)
-                        content+=sensorBase.getTimestamp();
+                        content+=getDate(sensorBase.getTimestamp());
 
 
                     content += "; ";
@@ -121,11 +123,15 @@ public class WearMessageListenerService extends WearableListenerService {
         }
     }
 
-    private String getDate(long time) {
-        Calendar cal = Calendar.getInstance(Locale.ENGLISH);
-        cal.setTimeInMillis(time);
-        String date = DateFormat.format("HH:mm:ss", cal).toString();
-        return date;
+    private Date lastTime;
+    private Long getDate(Long timeStampStr){
+
+        Date atualDate = new Date(timeStampStr);
+        if(lastTime==null)
+            lastTime = atualDate;
+
+        return (atualDate.getTime() - lastTime.getTime())/1000;
+
     }
 
 }

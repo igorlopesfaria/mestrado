@@ -2,8 +2,12 @@
     <string name="app_name">Fit Recognition</string>
 
 
-    <string name="walking">Andar</string>
-    <string name="running">Correr</string>
+    <string name="biceps">Bíceps</string>
+    <string name="chester">Peito</string>
+    <string name="shoulder">Ombro</string>
+    <string name="back">Costas</string>
+
+
     <string name="name">Identificador</string>
     <string name="select_experiment">Selecione a fase do Experimento</string>
     <string name="select_exercise">Selecione o tipo do Exercício</string>

@@ -2,8 +2,12 @@
     <string name="app_name">Fit Recognition</string>
     <string name="title_activity_option">OptionActivity</string>
 
-    <string name="walking">Andar</string>
-    <string name="running">Correr</string>
+    <string name="biceps">Bíceps</string>
+    <string name="chester">Peito</string>
+    <string name="shoulder">Ombro</string>
+    <string name="back">Costas</string>
+
+
     <string name="empty">-------</string>
     <string name="collect_dataset_training">Dataset</string>
     <string name="execute_experiment">Experimento</string>

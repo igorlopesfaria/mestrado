@@ -78,7 +78,6 @@ public class MainFragment extends BaseFragment implements         DataApi.DataLi
     private GyroscopeReader gyroscopeReader;
     private MagnetometerReader magnetometerReader;
     private ImageButton syncWatchBTN;
-    private ImageView arrow2IMG, exerciseIMG;
     private Spinner typeExperimentSP,typeExerciseSP;
 
     private EditText nameETX;
@@ -220,15 +219,8 @@ public class MainFragment extends BaseFragment implements         DataApi.DataLi
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 if(position==0){
                     ((TextView) parent.getChildAt(0)).setTextColor(Color.LTGRAY);
-                    exerciseIMG.setVisibility(View.GONE);
                 }else{
                     ((TextView) parent.getChildAt(0)).setTextColor(getResources().getColor(R.color.colorPrimary));
-                    exerciseIMG.setVisibility(View.VISIBLE);
-                    if(position==1)
-                        exerciseIMG.setImageDrawable(getResources().getDrawable(R.drawable.running_small));
-                    else
-                        exerciseIMG.setImageDrawable(getResources().getDrawable(R.drawable.walking_small));
-
                 }
             }
 
@@ -305,8 +297,6 @@ public class MainFragment extends BaseFragment implements         DataApi.DataLi
 
         typeExperimentSP  = (Spinner) view.findViewById(R.id.typeExperimentSP);
         typeExerciseSP  = (Spinner) view.findViewById(R.id.typeExerciseSP);
-        exerciseIMG = (ImageView) view.findViewById(R.id.exerciseIMG);
-        arrow2IMG = (ImageView) view.findViewById(R.id.arrow2IMG);
 
         nameETX = (EditText) view.findViewById(R.id.nameETX);
         
@@ -315,7 +305,12 @@ public class MainFragment extends BaseFragment implements         DataApi.DataLi
         typeExperimentSP.setAdapter(adapter);
 
 
-        String[] items2 = new String[]{getString(R.string.select_exercise), getString(R.string.running), getString(R.string.walking)};
+        String[] items2 = new String[]{
+                getString(R.string.select_exercise),
+                getString(R.string.biceps),
+                getString(R.string.chester),
+                getString(R.string.shoulder),
+                getString(R.string.back)};
         ArrayAdapter<String> adapter2 = new ArrayAdapter(getBaseActivity(), R.layout.item_spiner, items2);
         typeExerciseSP.setAdapter(adapter2);
 
@@ -400,6 +395,7 @@ public class MainFragment extends BaseFragment implements         DataApi.DataLi
     }
 
     private Date lastTime;
+
     private Long getDate(Long timeStampStr){
 
         Date atualDate = new Date(timeStampStr);

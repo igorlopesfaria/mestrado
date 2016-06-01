@@ -64,9 +64,7 @@ public class SplashFragment extends BaseFragment {
             public void run() {
                 if (getActivity() == null)
                     return;
-
                     getBaseActivity().changeFragment(MainFragment.newInstance());
-
             }
 
         }, 2000);
