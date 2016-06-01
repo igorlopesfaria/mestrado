@@ -6,6 +6,7 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import br.ufba.exerciserecognition.model.SensorBase;
@@ -57,6 +58,12 @@ public class GyroscopeReader implements SensorEventListener {
         gyroscope.setX(event.values[0]);
         gyroscope.setY(event.values[1]);
         gyroscope.setZ(event.values[2]);
+
+        long timeInMillis = (new Date()).getTime()
+                + (event.timestamp - System.nanoTime()) / 1000000L;
+
+        gyroscope.setTimestamp(timeInMillis);
+
         lGyroscope.add(gyroscope);
     }
 

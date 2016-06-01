@@ -1,9 +1,11 @@
 package br.ufba.exerciserecognition;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.SystemClock;
+import android.os.Vibrator;
 import android.support.wearable.activity.WearableActivity;
 import android.util.Log;
 import android.view.View;
@@ -60,11 +62,13 @@ public class MainActivity extends BaseActivity  implements
     private GoogleApiClient mGoogleApiClient;
     private ImageButton settingsBTN, playBTN, stopBTN;
     private Boolean  waiting = false;
+    private Vibrator vibrator;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        setAmbientEnabled();
 
 
         init();
@@ -98,13 +102,13 @@ public class MainActivity extends BaseActivity  implements
 
                 String typeExercise =  typeExerciseTX.getText().toString().trim();
                 if("".equals(typeExercise) || getString(R.string.empty).equals(typeExercise)){
-                    Toast.makeText(getApplicationContext(),getString(R.string.select_type_experiment),
+                    Toast.makeText(getApplicationContext(),getString(R.string.select_type_exercise),
                             Toast.LENGTH_LONG).show();
                     return;
                 }
 
 
-                new CountDownTimer(10000, 1000) {
+                new CountDownTimer(15000, 1000) {
 
                     public void onTick(long millisUntilFinished) {
                         long seconds = millisUntilFinished / 1000;
@@ -114,12 +118,13 @@ public class MainActivity extends BaseActivity  implements
                     }
 
                     public void onFinish() {
-                        waiting = false;
-
+                        waiting= false;
                         hideProgress();
-
                         chronometer.setBase(SystemClock.elapsedRealtime());
                         chronometer.start();
+                        vibrator.vibrate(1000);
+
+
                         accelerometerReader.initialize(getApplication());
                         gyroscopeReader.initialize(getApplication());
                         magnetometerReader.initialize(getApplication());
@@ -136,21 +141,8 @@ public class MainActivity extends BaseActivity  implements
         stopBTN.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                chronometer.stop();
-                accelerometerReader.unregisterSensor();
-                gyroscopeReader.unregisterSensor();
-                magnetometerReader.unregisterSensor();
 
-                lGyroscope = gyroscopeReader.getData();
-                lAccelerometer = accelerometerReader.getData();
-                lMagnetometer = magnetometerReader.getData();
-
-
-                sendValues();
-
-                stopBTN.setVisibility(View.GONE);
-                playBTN.setVisibility(View.VISIBLE);
-
+                stopChronometer();
             }
         });
         mGoogleApiClient = new GoogleApiClient.Builder(this)
@@ -171,18 +163,43 @@ public class MainActivity extends BaseActivity  implements
 
             @Override
             public void onChronometerTick(Chronometer chronometer) {
-                String typeExperiment = (String) typeExperimentTX.getText();
-                String currentTime= chronometer.getText().toString();
-                if(typeExperiment.equalsIgnoreCase(getString(R.string.collect_dataset_training)) && currentTime.equals("02:00"))
-                    stopBTN.performClick();
-                else if(typeExperiment.equalsIgnoreCase(getString(R.string.execute_experiment)) && currentTime.equals("01:00"))
-                    stopBTN.performClick();
+
+                String typeExperiment = typeExperimentTX.getText().toString();
+                String currentTime = chronometer.getText().toString();
+                boolean stop = false;
+                if (typeExperiment.equalsIgnoreCase(getString(R.string.collect_dataset_training)) && currentTime.equals("02:00")){
+                    stop = true;
+                }else if(typeExperiment.equalsIgnoreCase(getString(R.string.execute_experiment)) && currentTime.equals("01:00")) {
+                    stop = true;
+                }
+
+                if (stop) {
+                    stopChronometer();
+                }
             }
         });
-        //  getAppPreference().setKeyPrefsTypeExercise(elements[tag]);
+
     }
 
 
+    private void stopChronometer(){
+        chronometer.stop();
+        vibrator.vibrate(1000);
+
+        accelerometerReader.unregisterSensor();
+        gyroscopeReader.unregisterSensor();
+        magnetometerReader.unregisterSensor();
+
+        lGyroscope = gyroscopeReader.getData();
+        lAccelerometer = accelerometerReader.getData();
+        lMagnetometer = magnetometerReader.getData();
+
+
+        sendValues();
+
+        stopBTN.setVisibility(View.GONE);
+        playBTN.setVisibility(View.VISIBLE);
+    }
 
 
     private void init() {
@@ -196,6 +213,7 @@ public class MainActivity extends BaseActivity  implements
 
         setProgressBox((LinearLayout) findViewById(R.id.progressBox));
         setProgressText((TextView) findViewById(R.id.progressText));
+        vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
 
     }
 
@@ -264,18 +282,11 @@ public class MainActivity extends BaseActivity  implements
         }
 
         if(getAppPreference().getKeyPrefsTypeExercise()!=null && !"".equalsIgnoreCase(getAppPreference().getKeyPrefsTypeExercise())) {
-            typeExerciseTX.setVisibility(View.VISIBLE);
             typeExerciseTX.setText(getAppPreference().getKeyPrefsTypeExercise());
         }
 
         if(getAppPreference().getKeyPrefsTypeExperiment()!=null && !"".equalsIgnoreCase(getAppPreference().getKeyPrefsTypeExperiment())) {
             typeExperimentTX.setText(getAppPreference().getKeyPrefsTypeExperiment());
-            if(getString(R.string.collect_dataset_training).equalsIgnoreCase(getAppPreference().getKeyPrefsTypeExperiment()))
-                typeExerciseTX.setVisibility(View.VISIBLE);
-            else
-                typeExerciseTX.setVisibility(View.GONE);
-
-
         }
     }
 

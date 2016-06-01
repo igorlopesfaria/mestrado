@@ -52,7 +52,6 @@
             android:textColor="@color/colorPrimary"
             android:text="@string/empty"
             android:id="@+id/typeExerciseTX"
-            android:visibility="gone"
             android:textSize="12dp"
             android:gravity="center"
             android:layout_below="@+id/typeExperimentTX"

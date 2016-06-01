@@ -21,5 +21,9 @@
     <string name="creating_magnetometer">Criando Arquivo do Magnetômetro...</string>
     <string name="creating_all_sensor_data">Criando Arquivo de todos os sensores juntos...</string>
     <string name="problem_generate_file">Problema ao gerar arquivo! Repita  o procedimento.</string>
+    <string name="wait">Aguarde... </string>
+    <string name="wait_plural"> segundos</string>
+    <string name="wait_singular"> segundo</string>
+
 
 </resources>

@@ -10,6 +10,7 @@ public class SensorBase implements Serializable {
     private Float x;
     private Float z;
     private Float Y;
+    private Long timestamp;
 
 
     public Float getX() {
@@ -36,4 +37,11 @@ public class SensorBase implements Serializable {
         Y = y;
     }
 
+    public Long getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp(Long timestamp) {
+        this.timestamp = timestamp;
+    }
 }

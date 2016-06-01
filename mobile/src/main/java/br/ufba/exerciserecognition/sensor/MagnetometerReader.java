@@ -7,6 +7,7 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import br.ufba.exerciserecognition.model.SensorBase;
@@ -58,6 +59,11 @@ public class MagnetometerReader implements SensorEventListener {
         magnetometer.setX(event.values[0]);
         magnetometer.setY(event.values[1]);
         magnetometer.setZ(event.values[2]);
+
+        long timeInMillis = (new Date()).getTime()
+                + (event.timestamp - System.nanoTime()) / 1000000L;
+
+        magnetometer.setTimestamp(timeInMillis);
         lMagnetometer.add(magnetometer);
     }
 

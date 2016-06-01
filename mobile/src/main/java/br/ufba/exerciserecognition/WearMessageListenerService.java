@@ -1,6 +1,7 @@
 package br.ufba.exerciserecognition;
 
 import android.os.Environment;
+import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.View;
 
@@ -19,7 +20,9 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
+import java.util.Locale;
 
 import br.ufba.exerciserecognition.model.SensorBase;
 
@@ -28,7 +31,6 @@ import br.ufba.exerciserecognition.model.SensorBase;
  */
 public class WearMessageListenerService extends WearableListenerService {
     private static final String WEAR_PATH = "/DATA_SENSORS_PATH";
-    public static final String WEAR_DATA = "DATA_SENSORS";
 
     @Override
     public void onMessageReceived(MessageEvent messageEvent) {
@@ -47,7 +49,6 @@ public class WearMessageListenerService extends WearableListenerService {
             exportFile(accelerometer,1, exerciseType,experimentType, identifier);
             exportFile(gyroscope,2, exerciseType, experimentType, identifier);
             exportFile(magnetometer,3, exerciseType, experimentType, identifier);
-            exportFile(accelerometer, gyroscope,magnetometer,  exerciseType, experimentType, identifier );
 
         } else {
             super.onMessageReceived( messageEvent );
@@ -69,10 +70,10 @@ public class WearMessageListenerService extends WearableListenerService {
                 folderTypeExperiment = "Experimento";
             }
 
-            File folder = new File(Environment.getExternalStorageDirectory()+ "/ExerciseRecognition/wearable"+"/"+folderTypeExperiment);
+            File folder = new File(Environment.getExternalStorageDirectory()+ "/FitRecognition/smatwatch");
 
             if (!folder.exists())
-                folder.mkdir();
+                folder.mkdirs();
             String SensorType = "";
             if(id==1)
                 SensorType = "Accelerometer";
@@ -82,26 +83,27 @@ public class WearMessageListenerService extends WearableListenerService {
                 SensorType = "Magnetometer";
 
 
-            final String filename = folder.getAbsolutePath().toString() + "/"+identifier+"_"+ SensorType+ typeExercise+".csv";
+            final String filename = folder.getAbsolutePath().toString() + "/"+identifier+"_"+folderTypeExperiment+"_"+ SensorType+"_"+ typeExercise+".csv";
 
             String content="";
 
-            FileOutputStream fOut = new FileOutputStream (new File(filename), true); // true will be same as Context.MODE_APPEND
+            FileOutputStream fOut = new FileOutputStream (new File(filename), true);
             OutputStreamWriter osw = new OutputStreamWriter(fOut);
 
-            // Write the string to the file
             for( SensorBase sensorBase: lSensor){
 
-                for( int j=0; j<3; j++){
+                for( int j=0; j<4; j++){
                     if( j==0)
                         content+=sensorBase.getX().toString();
                     else if(j==1)
                         content+=sensorBase.getY().toString();
                     else if(j==2)
                         content+=sensorBase.getZ().toString();
+                    else if(j==3)
+                        content+=sensorBase.getTimestamp();
 
 
-                    content += " ,";
+                    content += "; ";
                 }
                 if(!typeExperiment.equalsIgnoreCase("Dataset"))
                     typeExercise = "?";
@@ -119,77 +121,11 @@ public class WearMessageListenerService extends WearableListenerService {
         }
     }
 
-    private void exportFile(List<SensorBase> lAccelerometer,
-                            List<SensorBase> lGyroscope,
-                            List<SensorBase> lMagnetometer, String typeExercise, String typeExperiment, String identifier){
-        try {
-
-            String folderTypeExperiment = "Dataset";
-            if(!typeExperiment.equalsIgnoreCase(folderTypeExperiment)) {
-                folderTypeExperiment = "Experimento";
-                typeExercise = "";
-            }
-
-            File folder = new File(Environment.getExternalStorageDirectory()+ "/ExcerciseRecognition/wearable"+"/"+folderTypeExperiment);
-
-            if (!folder.exists())
-                folder.mkdir();
-
-
-            int size = lAccelerometer.size();
-
-            if(size>lGyroscope.size())
-                size = lGyroscope.size();
-            if(size>lMagnetometer.size())
-                size = lMagnetometer.size();
-
-
-
-            final String filename = folder.getAbsolutePath().toString() +"/"+identifier+"_"+"AllSensors"+ typeExercise+".csv";
-            String content="";
-
-            FileOutputStream fOut = new FileOutputStream (new File(filename), true); // true will be same as Context.MODE_APPEND
-            OutputStreamWriter osw = new OutputStreamWriter(fOut);
-
-
-            // Write the string to the file
-            for(int i= 0 ; i< size; i++) {
-
-                content += lAccelerometer.get(i).getX().toString();
-                content += " ,";
-                content += lAccelerometer.get(i).getY().toString();
-                content += " ,";
-                content += lAccelerometer.get(i).getZ().toString();
-                content += " ,";
-
-                content += lGyroscope.get(i).getX().toString();
-                content += " ,";
-                content += lGyroscope.get(i).getY().toString();
-                content += " ,";
-                content += lGyroscope.get(i).getZ().toString();
-                content += " ,";
-
-                content += lMagnetometer.get(i).getX().toString();
-                content += " ,";
-                content += lMagnetometer.get(i).getY().toString();
-                content += " ,";
-                content += lMagnetometer.get(i).getZ().toString();
-
-                if (!typeExperiment.equalsIgnoreCase("Dataset"))
-                    typeExercise = "?";
-
-
-                content = content + " ," + typeExercise + "\n";
-            }
-            Log.v("AllSensors content is ", content);
-            osw.write(content);
-            osw.flush();
-            osw.close();
-
-        }
-        catch (IOException ioe) {
-            ioe.printStackTrace();
-        }
-
+    private String getDate(long time) {
+        Calendar cal = Calendar.getInstance(Locale.ENGLISH);
+        cal.setTimeInMillis(time);
+        String date = DateFormat.format("HH:mm:ss", cal).toString();
+        return date;
     }
+
 }

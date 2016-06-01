@@ -18,14 +18,35 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Chronometer;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
+
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.PendingResult;
+import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.common.api.Status;
+import com.google.android.gms.wearable.DataApi;
+import com.google.android.gms.wearable.DataEventBuffer;
+import com.google.android.gms.wearable.MessageApi;
+import com.google.android.gms.wearable.MessageEvent;
+import com.google.android.gms.wearable.Node;
+import com.google.android.gms.wearable.NodeApi;
+import com.google.android.gms.wearable.Wearable;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import br.ufba.exerciserecognition.R;
 import br.ufba.exerciserecognition.model.SensorBase;
@@ -40,30 +61,33 @@ import br.ufba.exerciserecognition.sensor.MagnetometerReader;
  * Use the {@link MainFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class MainFragment extends BaseFragment {
+public class MainFragment extends BaseFragment implements         DataApi.DataListener,
+        GoogleApiClient.ConnectionCallbacks,
+        GoogleApiClient.OnConnectionFailedListener{
+    private static final String PATH = "/DATA_IDENTIFIER_PATH";
 
 
     private List<SensorBase> lAccelerometer;
     private List<SensorBase> lGyroscope;
     private List<SensorBase> lMagnetometer;
+    private GoogleApiClient mGoogleApiClient;
 
     private Button onBTN, offBTN;
     private Chronometer chronometer;
     private AccelerometerReader accelerometerReader;
     private GyroscopeReader gyroscopeReader;
     private MagnetometerReader magnetometerReader;
-
+    private ImageButton syncWatchBTN;
     private ImageView arrow2IMG, exerciseIMG;
     private Spinner typeExperimentSP,typeExerciseSP;
 
     private EditText nameETX;
     private View view;
-    Vibrator vibrator;
+    private Vibrator vibrator;
 
     private Boolean  waiting = false;
 
     public MainFragment() {
-        // Required empty public constructor
     }
 
     /**
@@ -101,6 +125,11 @@ public class MainFragment extends BaseFragment {
         magnetometerReader = new MagnetometerReader();
         offBTN.setVisibility(View.GONE);
         onBTN.setVisibility(View.VISIBLE);
+        mGoogleApiClient = new GoogleApiClient.Builder(getBaseActivity())
+                .addApi(Wearable.API)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .build();
 
         onBTN.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -132,7 +161,9 @@ public class MainFragment extends BaseFragment {
                     public void onTick(long millisUntilFinished) {
                         long seconds = millisUntilFinished / 1000;
                         waiting = true;
-                        getBaseActivity().showProgress("Aguarde... "+seconds+" seg");
+
+                        getBaseActivity().showProgress(getString(R.string.wait)+seconds+
+                                ((seconds!=1)?getString(R.string.wait_plural):getString(R.string.wait_singular)));
                     }
 
                     public void onFinish() {
@@ -207,19 +238,23 @@ public class MainFragment extends BaseFragment {
             }
         });
 
+        syncWatchBTN.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                sendIdentifier();
+            }
+        });
         chronometer.setOnChronometerTickListener(new Chronometer.OnChronometerTickListener() {
 
             @Override
             public void onChronometerTick(Chronometer chronometer) {
-                // TODO Auto-generated method stub
+
                 String typeExperiment = (String) typeExperimentSP.getSelectedItem();
                 String currentTime = chronometer.getText().toString();
                 boolean stop = false;
                 if (typeExperiment.equalsIgnoreCase(getString(R.string.collect_dataset_training)) && currentTime.equals("02:00")){
-//                    offBTN.performClick();
                     stop = true;
-                }else if(typeExperiment.equalsIgnoreCase(getString(R.string.execute_experiment)) && currentTime.equals("00:05")) {
-//                    offBTN.performClick();
+                }else if(typeExperiment.equalsIgnoreCase(getString(R.string.execute_experiment)) && currentTime.equals("01:00")) {
                     stop = true;
                 }
 
@@ -255,7 +290,6 @@ public class MainFragment extends BaseFragment {
         getBaseActivity().showProgress(getString(R.string.creating_magnetometer));
         exportFile(lMagnetometer,3);
         getBaseActivity().showProgress(getString(R.string.creating_all_sensor_data));
-//              exportFile(lAccelerometer, lGyroscope,lMagnetometer );
         offBTN.setVisibility(View.GONE);
         onBTN.setVisibility(View.VISIBLE);
         getBaseActivity().hideProgress();
@@ -286,7 +320,7 @@ public class MainFragment extends BaseFragment {
         typeExerciseSP.setAdapter(adapter2);
 
         vibrator = (Vibrator) getBaseActivity().getSystemService(Context.VIBRATOR_SERVICE);
-
+        syncWatchBTN= (ImageButton) view.findViewById(R.id.syncWatchBTN);
 
     }
 
@@ -302,12 +336,12 @@ public class MainFragment extends BaseFragment {
             String typeExercise = (String) typeExerciseSP.getSelectedItem();
             String typeExperiment = (String) typeExperimentSP.getSelectedItem();
 
-            String folderTypeExperiment = "DataSet";
+            String folderTypeExperiment = "Dataset";
             if(!typeExperiment.equalsIgnoreCase(getString(R.string.collect_dataset_training))) {
                 folderTypeExperiment = "Experimento";
             }
 
-            File folder = new File(Environment.getExternalStorageDirectory()+ "/ExerciseRecognition/mobile");
+            File folder = new File(Environment.getExternalStorageDirectory()+ "/FitRecognition/smartphone");
 
             if (!folder.exists())
                 folder.mkdirs();
@@ -330,17 +364,19 @@ public class MainFragment extends BaseFragment {
             FileOutputStream fOut = new FileOutputStream (new File(filename), true); // true will be same as Context.MODE_APPEND
             OutputStreamWriter osw = new OutputStreamWriter(fOut);
 
+            lastTime = null;
             // Write the string to the file
             for( SensorBase sensorBase: lSensor){
 
-                for( int j=0; j<3; j++){
+                for( int j=0; j<4; j++){
                     if( j==0)
                         content+=sensorBase.getX().toString();
                     else if(j==1)
                         content+=sensorBase.getY().toString();
                     else if(j==2)
                         content+=sensorBase.getZ().toString();
-
+                    else if(j==3)
+                        content+=getDate(sensorBase.getTimestamp());
 
                     content += "; ";
                 }
@@ -363,12 +399,98 @@ public class MainFragment extends BaseFragment {
 
     }
 
+    private Date lastTime;
+    private Long getDate(Long timeStampStr){
+
+        Date atualDate = new Date(timeStampStr);
+        if(lastTime==null)
+            lastTime = atualDate;
+
+        return (atualDate.getTime() - lastTime.getTime())/1000;
+
+    }
+
     public boolean isExternalStorageWritable() {
         String state = Environment.getExternalStorageState();
         if (Environment.MEDIA_MOUNTED.equals(state)) {
             return true;
         }
         return false;
+    }
+
+
+    private void sendIdentifier() {
+        PendingResult<NodeApi.GetConnectedNodesResult> nodes = Wearable.NodeApi.getConnectedNodes(mGoogleApiClient);
+        nodes.setResultCallback(new ResultCallback<NodeApi.GetConnectedNodesResult>() {
+            @Override
+            public void onResult(NodeApi.GetConnectedNodesResult result) {
+                for (int i = 0; i < result.getNodes().size(); i++) {
+                    Node node = result.getNodes().get(i);
+                    String nName = node.getDisplayName();
+                    String nId = node.getId();
+                    Log.d("MainActivity", "Node name and ID: " + nName + " | " + nId);
+
+                    Wearable.MessageApi.addListener(mGoogleApiClient, new MessageApi.MessageListener() {
+                        @Override
+                        public void onMessageReceived(MessageEvent messageEvent) {
+                            Log.d("MainActivity", "Message received: " + messageEvent);
+                        }
+                    });
+
+                    String identifier = nameETX.getText().toString();
+
+
+                    PendingResult<MessageApi.SendMessageResult> messageResult = Wearable.MessageApi.sendMessage(
+                            mGoogleApiClient,
+                            node.getId(),
+                            PATH,
+                            identifier.getBytes());
+
+                    messageResult.setResultCallback(new ResultCallback<MessageApi.SendMessageResult>() {
+                        @Override
+                        public void onResult(MessageApi.SendMessageResult sendMessageResult) {
+                            Status status = sendMessageResult.getStatus();
+                            Log.d("MainActivity", "Status: " + status.toString());
+
+                        }
+                    });
+                }
+            }
+        });
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        mGoogleApiClient.connect();
+    }
+
+    @Override
+    public void onConnected(Bundle bundle) {
+        Wearable.DataApi.addListener(mGoogleApiClient, this);
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        Wearable.DataApi.removeListener(mGoogleApiClient, this);
+        mGoogleApiClient.disconnect();
+    }
+
+
+    @Override
+    public void onDataChanged(DataEventBuffer dataEventBuffer) {
+
+    }
+
+    @Override
+    public void onConnectionFailed(ConnectionResult connectionResult) {
+
     }
 
 }

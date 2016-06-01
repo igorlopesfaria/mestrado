@@ -53,9 +53,8 @@ public class OptionActivity extends BaseActivity implements WearableListView.Cli
 
         MenuItem menuItem3 = new MenuItem();
         menuItem3.setTitle(getString(R.string.type_exercise));
-        if(getString(R.string.collect_dataset_training).equalsIgnoreCase(getAppPreference().getKeyPrefsTypeExperiment())
-                && getAppPreference().getKeyPrefsTypeExercise()!=null)
-            menuItem3.setSubtitle(getAppPreference().getKeyPrefsTypeExercise());
+        if(getAppPreference().getKeyPrefsTypeExercise()!=null)
+         menuItem3.setSubtitle(getAppPreference().getKeyPrefsTypeExercise());
 
         elements.add(menuItem);
         elements.add(menuItem2);
@@ -79,16 +78,8 @@ public class OptionActivity extends BaseActivity implements WearableListView.Cli
             startActivity(intent);
 
         }else if (tag ==2){
-
-            if(getString(R.string.collect_dataset_training).equalsIgnoreCase(getAppPreference().getKeyPrefsTypeExperiment())) {
-                Intent intent = new Intent(getApplicationContext(), OptionExerciseActivity.class);
-                startActivity(intent);
-            }else{
-                Toast.makeText(this, getString(R.string.to_select_exercise_select_dataset),
-                        Toast.LENGTH_LONG).show();
-
-            }
-
+             Intent intent = new Intent(getApplicationContext(), OptionExerciseActivity.class);
+             startActivity(intent);
         }
         // use this data to complete some action ...
     }

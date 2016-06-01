@@ -6,6 +6,7 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import br.ufba.exerciserecognition.model.SensorBase;
@@ -19,6 +20,7 @@ public class AccelerometerReader implements SensorEventListener {
     private Sensor mAccelerometer;
     protected Boolean mInitialized, started = false;
     private static List<SensorBase> lAccelerometer;
+
 
     public void initialize(Context context){
         mInitialized = false;
@@ -56,6 +58,11 @@ public class AccelerometerReader implements SensorEventListener {
         accelerometer.setX(event.values[0]);
         accelerometer.setY(event.values[1]);
         accelerometer.setZ(event.values[2]);
+
+        long timeInMillis = (new Date()).getTime()
+                + (event.timestamp - System.nanoTime()) / 1000000L;
+
+        accelerometer.setTimestamp(timeInMillis);
         lAccelerometer.add(accelerometer);
     }
 
