@@ -244,9 +244,9 @@ public class MainFragment extends BaseFragment implements         DataApi.DataLi
                 String typeExperiment = (String) typeExperimentSP.getSelectedItem();
                 String currentTime = chronometer.getText().toString();
                 boolean stop = false;
-                if (typeExperiment.equalsIgnoreCase(getString(R.string.collect_dataset_training)) && currentTime.equals("02:00")){
+                if (typeExperiment.equalsIgnoreCase(getString(R.string.collect_dataset_training)) && currentTime.equals("01:00")){
                     stop = true;
-                }else if(typeExperiment.equalsIgnoreCase(getString(R.string.execute_experiment)) && currentTime.equals("01:00")) {
+                }else if(typeExperiment.equalsIgnoreCase(getString(R.string.execute_experiment)) && currentTime.equals("00:30")) {
                     stop = true;
                 }
 
@@ -308,6 +308,7 @@ public class MainFragment extends BaseFragment implements         DataApi.DataLi
         String[] items2 = new String[]{
                 getString(R.string.select_exercise),
                 getString(R.string.biceps),
+                getString(R.string.triceps),
                 getString(R.string.chester),
                 getString(R.string.shoulder),
                 getString(R.string.back)};

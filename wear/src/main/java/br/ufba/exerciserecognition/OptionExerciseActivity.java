@@ -34,19 +34,23 @@ public class OptionExerciseActivity extends BaseActivity implements WearableList
         MenuItem menuItem = new MenuItem();
         menuItem.setTitle(getString(R.string.biceps));
 
-        MenuItem menuItem2 = new MenuItem();
-        menuItem2.setTitle(getString(R.string.chester));
+        MenuItem menuItem2= new MenuItem();
+        menuItem2.setTitle(getString(R.string.triceps));
 
         MenuItem menuItem3 = new MenuItem();
-        menuItem3.setTitle(getString(R.string.shoulder));
+        menuItem3.setTitle(getString(R.string.chester));
 
         MenuItem menuItem4 = new MenuItem();
-        menuItem4.setTitle(getString(R.string.back));
+        menuItem4.setTitle(getString(R.string.shoulder));
+
+        MenuItem menuItem5 = new MenuItem();
+        menuItem5.setTitle(getString(R.string.back));
 
         elements.add(menuItem);
         elements.add(menuItem2);
         elements.add(menuItem3);
         elements.add(menuItem4);
+        elements.add(menuItem5);
 
         // Assign an adapter to the list
         listView.setAdapter(new OptionAdapter(this, elements));

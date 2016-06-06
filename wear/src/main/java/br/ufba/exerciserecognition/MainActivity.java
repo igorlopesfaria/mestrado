@@ -167,9 +167,9 @@ public class MainActivity extends BaseActivity  implements
                 String typeExperiment = typeExperimentTX.getText().toString();
                 String currentTime = chronometer.getText().toString();
                 boolean stop = false;
-                if (typeExperiment.equalsIgnoreCase(getString(R.string.collect_dataset_training)) && currentTime.equals("02:00")){
+                if (typeExperiment.equalsIgnoreCase(getString(R.string.collect_dataset_training)) && currentTime.equals("01:00")){
                     stop = true;
-                }else if(typeExperiment.equalsIgnoreCase(getString(R.string.execute_experiment)) && currentTime.equals("01:00")) {
+                }else if(typeExperiment.equalsIgnoreCase(getString(R.string.execute_experiment)) && currentTime.equals("00:30")) {
                     stop = true;
                 }
 
