@@ -9,6 +9,7 @@ import android.os.Vibrator;
 import android.support.wearable.activity.WearableActivity;
 import android.util.Log;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.Chronometer;
 import android.widget.ImageButton;
@@ -51,7 +52,7 @@ public class MainActivity extends BaseActivity  implements
     private static final String PATH = "/DATA_SENSORS_PATH";
 
 
-    private TextView typeExerciseTX, typeExperimentTX, identifierTX;
+    private TextView typeExerciseTX, identifierTX;
     private List<SensorBase> lAccelerometer;
     private List<SensorBase> lGyroscope;
     private List<SensorBase> lMagnetometer;
@@ -69,6 +70,7 @@ public class MainActivity extends BaseActivity  implements
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         setAmbientEnabled();
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
 
         init();
@@ -93,13 +95,6 @@ public class MainActivity extends BaseActivity  implements
                     return;
                 }
 
-                String typeExperiment =  typeExperimentTX.getText().toString().trim();
-                if("".equals(typeExperiment) || getString(R.string.empty).equals(typeExperiment)){
-                    Toast.makeText(getApplicationContext(),getString(R.string.select_type_experiment),
-                            Toast.LENGTH_LONG).show();
-                    return;
-                }
-
                 String typeExercise =  typeExerciseTX.getText().toString().trim();
                 if("".equals(typeExercise) || getString(R.string.empty).equals(typeExercise)){
                     Toast.makeText(getApplicationContext(),getString(R.string.select_type_exercise),
@@ -108,7 +103,7 @@ public class MainActivity extends BaseActivity  implements
                 }
 
 
-                new CountDownTimer(15000, 1000) {
+                new CountDownTimer(8000, 1000) {
 
                     public void onTick(long millisUntilFinished) {
                         long seconds = millisUntilFinished / 1000;
@@ -164,12 +159,9 @@ public class MainActivity extends BaseActivity  implements
             @Override
             public void onChronometerTick(Chronometer chronometer) {
 
-                String typeExperiment = typeExperimentTX.getText().toString();
                 String currentTime = chronometer.getText().toString();
                 boolean stop = false;
-                if (typeExperiment.equalsIgnoreCase(getString(R.string.collect_dataset_training)) && currentTime.equals("01:00")){
-                    stop = true;
-                }else if(typeExperiment.equalsIgnoreCase(getString(R.string.execute_experiment)) && currentTime.equals("00:30")) {
+                if (currentTime.equals("01:00")){
                     stop = true;
                 }
 
@@ -209,7 +201,6 @@ public class MainActivity extends BaseActivity  implements
         settingsBTN= (ImageButton)findViewById(R.id.settingsBTN);
         identifierTX= (TextView) findViewById(R.id.identifierTX);
         typeExerciseTX= (TextView) findViewById(R.id.typeExerciseTX);
-        typeExperimentTX= (TextView)findViewById(R.id.typeExperimentTX);
 
         setProgressBox((LinearLayout) findViewById(R.id.progressBox));
         setProgressText((TextView) findViewById(R.id.progressText));
@@ -239,20 +230,15 @@ public class MainActivity extends BaseActivity  implements
                     JsonArray gyroscopeArrayJSON = gson.toJsonTree(lGyroscope).getAsJsonArray();
                     JsonArray magnetometerArrayJSON = gson.toJsonTree(lMagnetometer).getAsJsonArray();
 
-                    JsonObject identifier = new JsonObject();
-                    identifier.addProperty("identifier",identifierTX.getText().toString());
-                    JsonObject experimentType = new JsonObject();
-                    identifier.addProperty("experimentType",typeExperimentTX.getText().toString());
-                    JsonObject exerciseType = new JsonObject();
-                    identifier.addProperty("exerciseType",typeExerciseTX.getText().toString());
+                    JsonObject genericData = new JsonObject();
+                    genericData.addProperty("identifier",identifierTX.getText().toString());
+                    genericData.addProperty("exerciseType",typeExerciseTX.getText().toString());
 
                     JsonArray resultToSend = new JsonArray();
                     resultToSend.add(accelerometerArrayJSON);
                     resultToSend.add(gyroscopeArrayJSON);
                     resultToSend.add(magnetometerArrayJSON);
-                    resultToSend.add(identifier);
-                    resultToSend.add(experimentType);
-                    resultToSend.add(exerciseType);
+                    resultToSend.add(genericData);
 
                     PendingResult<MessageApi.SendMessageResult> messageResult = Wearable.MessageApi.sendMessage(
                             mGoogleApiClient,
@@ -283,10 +269,6 @@ public class MainActivity extends BaseActivity  implements
 
         if(getAppPreference().getKeyPrefsTypeExercise()!=null && !"".equalsIgnoreCase(getAppPreference().getKeyPrefsTypeExercise())) {
             typeExerciseTX.setText(getAppPreference().getKeyPrefsTypeExercise());
-        }
-
-        if(getAppPreference().getKeyPrefsTypeExperiment()!=null && !"".equalsIgnoreCase(getAppPreference().getKeyPrefsTypeExperiment())) {
-            typeExperimentTX.setText(getAppPreference().getKeyPrefsTypeExperiment());
         }
     }
 

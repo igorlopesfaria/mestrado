@@ -14,7 +14,6 @@ public class AppPreference {
     private SharedPreferences sharedPrefs;
     private SharedPreferences.Editor prefsEditor;
 
-    public static final String KEY_PREFS_TYPE_EXPERIMENT = "typeExperiment";
     public static final String KEY_PREFS_TYPE_EXERCISE = "typeExercise";
     public static final String KEY_PREFS_IDENTIFIER = "identifier";
 
@@ -24,16 +23,6 @@ public class AppPreference {
         this.sharedPrefs = context.getSharedPreferences(APP_SHARED_PREFS,
                 Activity.MODE_PRIVATE);
         this.prefsEditor = sharedPrefs.edit();
-    }
-
-
-    public String getKeyPrefsTypeExperiment() {
-        return sharedPrefs.getString(KEY_PREFS_TYPE_EXPERIMENT, null);
-    }
-
-    public void setKeyPrefsTypeExperiment(String token) {
-        prefsEditor.putString(KEY_PREFS_TYPE_EXPERIMENT, token);
-        prefsEditor.commit();
     }
 
     public String getKeyPrefsTypeExercise() {

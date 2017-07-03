@@ -19,13 +19,12 @@ public class GyroscopeReader implements SensorEventListener {
 
     private SensorManager mSensorManager;
     private Sensor mGyroscope;
-    protected Boolean mInitialized;
     private static List<SensorBase> lGyroscope;
 
     private Boolean started = false;
 
     public void initialize(Context context){
-        mInitialized = false;
+        lGyroscope = new ArrayList();
         mSensorManager = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
         mGyroscope = mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
         mSensorManager.registerListener(this, mGyroscope, SensorManager.SENSOR_DELAY_NORMAL);
@@ -52,10 +51,6 @@ public class GyroscopeReader implements SensorEventListener {
 
         SensorBase gyroscope = new SensorBase();
 
-        if (!mInitialized) {
-            lGyroscope = new ArrayList();
-            mInitialized = true;
-        }
         gyroscope.setX(event.values[0]);
         gyroscope.setY(event.values[1]);
         gyroscope.setZ(event.values[2]);

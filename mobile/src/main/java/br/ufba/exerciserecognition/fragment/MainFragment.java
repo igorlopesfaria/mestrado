@@ -78,7 +78,7 @@ public class MainFragment extends BaseFragment implements         DataApi.DataLi
     private GyroscopeReader gyroscopeReader;
     private MagnetometerReader magnetometerReader;
     private ImageButton syncWatchBTN;
-    private Spinner typeExperimentSP,typeExerciseSP;
+    private Spinner typeExerciseSP;
 
     private EditText nameETX;
     private View view;
@@ -143,19 +143,13 @@ public class MainFragment extends BaseFragment implements         DataApi.DataLi
                     return;
                 }
 
-                String typeExperiment = (String) typeExperimentSP.getSelectedItem();
-                if(getString(R.string.select_experiment).equalsIgnoreCase(typeExperiment)){
-                    showSnackBar(v, getString(R.string.select_type_experiment), Snackbar.LENGTH_LONG, android.R.color.white, android.R.color.holo_red_dark);
-                    return;
-                }
-
                 String typeExercise = (String) typeExerciseSP.getSelectedItem();
                 if(getString(R.string.select_exercise).equalsIgnoreCase(typeExercise)){
                     showSnackBar(v, getString(R.string.select_type_exercise), Snackbar.LENGTH_LONG, android.R.color.white, android.R.color.holo_red_dark);
                     return;
                 }
 
-                new CountDownTimer(15000, 1000) {
+                new CountDownTimer(8000, 1000) {
 
                     public void onTick(long millisUntilFinished) {
                         long seconds = millisUntilFinished / 1000;
@@ -172,7 +166,6 @@ public class MainFragment extends BaseFragment implements         DataApi.DataLi
                         chronometer.start();
                         vibrator.vibrate(1000);
 
-                        typeExperimentSP.setEnabled(false);
                         typeExerciseSP.setEnabled(false);
                         nameETX.setEnabled(false);
                         accelerometerReader.initialize(getBaseActivity());
@@ -196,27 +189,13 @@ public class MainFragment extends BaseFragment implements         DataApi.DataLi
         });
 
 
-        typeExperimentSP.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                if(position==0){
-                    ((TextView) parent.getChildAt(0)).setTextColor(Color.LTGRAY);
-                }else{
-                    ((TextView) parent.getChildAt(0)).setTextColor(getResources().getColor(R.color.colorPrimary));
-                }
-
-
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-
-            }
-        });
 
         typeExerciseSP.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+
+                if(parent == null || parent.getChildAt(0)==null)
+                    return;
                 if(position==0){
                     ((TextView) parent.getChildAt(0)).setTextColor(Color.LTGRAY);
                 }else{
@@ -241,12 +220,9 @@ public class MainFragment extends BaseFragment implements         DataApi.DataLi
             @Override
             public void onChronometerTick(Chronometer chronometer) {
 
-                String typeExperiment = (String) typeExperimentSP.getSelectedItem();
                 String currentTime = chronometer.getText().toString();
                 boolean stop = false;
-                if (typeExperiment.equalsIgnoreCase(getString(R.string.collect_dataset_training)) && currentTime.equals("01:00")){
-                    stop = true;
-                }else if(typeExperiment.equalsIgnoreCase(getString(R.string.execute_experiment)) && currentTime.equals("00:30")) {
+                if (currentTime.equals("01:00")){
                     stop = true;
                 }
 
@@ -261,7 +237,6 @@ public class MainFragment extends BaseFragment implements         DataApi.DataLi
         chronometer.stop();
         vibrator.vibrate(1000);
 
-        typeExperimentSP.setEnabled(true);
         typeExerciseSP.setEnabled(true);
         nameETX.setEnabled(true);
 
@@ -295,14 +270,12 @@ public class MainFragment extends BaseFragment implements         DataApi.DataLi
 
         chronometer = (Chronometer) view.findViewById(R.id.chronometer);
 
-        typeExperimentSP  = (Spinner) view.findViewById(R.id.typeExperimentSP);
         typeExerciseSP  = (Spinner) view.findViewById(R.id.typeExerciseSP);
 
         nameETX = (EditText) view.findViewById(R.id.nameETX);
         
         String[] items = new String[]{getString(R.string.select_experiment), getString(R.string.collect_dataset_training), getString(R.string.execute_experiment)};
         ArrayAdapter<String> adapter = new ArrayAdapter(getBaseActivity(), R.layout.item_spiner, items);
-        typeExperimentSP.setAdapter(adapter);
 
 
         String[] items2 = new String[]{
@@ -311,7 +284,10 @@ public class MainFragment extends BaseFragment implements         DataApi.DataLi
                 getString(R.string.triceps),
                 getString(R.string.chester),
                 getString(R.string.shoulder),
-                getString(R.string.back)};
+                getString(R.string.back),
+                getString(R.string.walk),
+                getString(R.string.run)
+        };
         ArrayAdapter<String> adapter2 = new ArrayAdapter(getBaseActivity(), R.layout.item_spiner, items2);
         typeExerciseSP.setAdapter(adapter2);
 
@@ -330,12 +306,8 @@ public class MainFragment extends BaseFragment implements         DataApi.DataLi
             }
 
             String typeExercise = (String) typeExerciseSP.getSelectedItem();
-            String typeExperiment = (String) typeExperimentSP.getSelectedItem();
 
             String folderTypeExperiment = "Dataset";
-            if(!typeExperiment.equalsIgnoreCase(getString(R.string.collect_dataset_training))) {
-                folderTypeExperiment = "Experimento";
-            }
 
             File folder = new File(Environment.getExternalStorageDirectory()+ "/FitRecognition/smartphone");
 
@@ -344,46 +316,44 @@ public class MainFragment extends BaseFragment implements         DataApi.DataLi
 
             String identifier = nameETX.getText().toString().trim();
 
-            String SensorType;
+            String sensorType;
             if(id==1)
-                SensorType = "Accelerometer";
+                sensorType = "Accelerometer";
             else if(id==2)
-                SensorType = "Gyroscope";
+                sensorType = "Gyroscope";
             else
-                SensorType = "Magnetometer";
+                sensorType = "Magnetometer";
 
 
-            final String filename = folder.getAbsolutePath().toString() + "/"+identifier+"_"+folderTypeExperiment+"_"+ SensorType+"_"+ typeExercise+".csv";
+            final String filename = folder.getAbsolutePath().toString() + "/"+identifier+"_"+folderTypeExperiment+"_"+ sensorType+"_"+ typeExercise+".csv";
 
-            String content="";
 
             FileOutputStream fOut = new FileOutputStream (new File(filename), true); // true will be same as Context.MODE_APPEND
             OutputStreamWriter osw = new OutputStreamWriter(fOut);
 
             lastTime = null;
             // Write the string to the file
+            StringBuilder content = new StringBuilder();
             for( SensorBase sensorBase: lSensor){
 
                 for( int j=0; j<4; j++){
                     if( j==0)
-                        content+=sensorBase.getX().toString();
+                        content.append(sensorBase.getX().toString());
                     else if(j==1)
-                        content+=sensorBase.getY().toString();
+                        content.append(sensorBase.getY().toString());
                     else if(j==2)
-                        content+=sensorBase.getZ().toString();
+                        content.append(sensorBase.getZ().toString());
                     else if(j==3)
-                        content+=getDate(sensorBase.getTimestamp());
+                        content.append(getDate(sensorBase.getTimestamp()));
 
-                    content += "; ";
+                    content.append("; ");
                 }
-                if(!typeExperiment.equalsIgnoreCase(getString(R.string.collect_dataset_training)))
-                    typeExercise = "?";
 
-                content= content+ typeExercise+"\n";
+                content.append(typeExercise+"\n");
 
             }
-            Log.v(SensorType+" content is ", content);
-            osw.write(content);
+            Log.v(sensorType+" content size ", lSensor.size() +" sensor "+ sensorType);
+            osw.write(content.toString());
             osw.flush();
             osw.close();
         }

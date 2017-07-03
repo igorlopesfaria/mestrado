@@ -19,17 +19,17 @@ public class MagnetometerReader implements SensorEventListener {
 
     private SensorManager mSensorManager;
     private Sensor mMagnetometer;
-    protected Boolean mInitialized;
     private static List<SensorBase> lMagnetometer;
 
     private Boolean started = false;
 
     public void initialize(Context context){
-        mInitialized = false;
+        lMagnetometer = new ArrayList();
         mSensorManager = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
         mMagnetometer = mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
         mSensorManager.registerListener(this, mMagnetometer, SensorManager.SENSOR_DELAY_NORMAL);
         started = true;
+
     }
 
 
@@ -52,10 +52,6 @@ public class MagnetometerReader implements SensorEventListener {
 
         SensorBase magnetometer = new SensorBase();
 
-        if (!mInitialized) {
-            lMagnetometer = new ArrayList();
-            mInitialized = true;
-        }
         magnetometer.setX(event.values[0]);
         magnetometer.setY(event.values[1]);
         magnetometer.setZ(event.values[2]);

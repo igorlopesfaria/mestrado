@@ -40,16 +40,15 @@ public class WearMessageListenerService extends WearableListenerService {
             JsonParser jsonParser = new JsonParser();
             JsonElement jsonElement = jsonParser.parse(new String(messageEvent.getData()));
             JsonArray jsonArray = jsonElement.getAsJsonArray();
-            List<SensorBase>accelerometer  = processLocale(jsonArray.get(0).getAsJsonArray());
-            List<SensorBase>gyroscope  = processLocale(jsonArray.get(1).getAsJsonArray());
-            List<SensorBase>magnetometer  = processLocale(jsonArray.get(2).getAsJsonArray());
+            List<SensorBase> accelerometer  = processLocale(jsonArray.get(0).getAsJsonArray());
+            List<SensorBase> gyroscope  = processLocale(jsonArray.get(1).getAsJsonArray());
+            List<SensorBase> magnetometer  = processLocale(jsonArray.get(2).getAsJsonArray());
             String identifier = jsonArray.get(3).getAsJsonObject().get("identifier").getAsString();
-            String experimentType = jsonArray.get(3).getAsJsonObject().get("experimentType").getAsString();
             String exerciseType = jsonArray.get(3).getAsJsonObject().get("exerciseType").getAsString();
 
-            exportFile(accelerometer,1, exerciseType,experimentType, identifier);
-            exportFile(gyroscope,2, exerciseType, experimentType, identifier);
-            exportFile(magnetometer,3, exerciseType, experimentType, identifier);
+            exportFile(accelerometer,"Accelerometer", exerciseType, identifier);
+            exportFile(gyroscope,"Gyroscope", exerciseType, identifier);
+            exportFile(magnetometer,"Magnetometer", exerciseType, identifier);
 
         } else {
             super.onMessageReceived( messageEvent );
@@ -63,58 +62,41 @@ public class WearMessageListenerService extends WearableListenerService {
         return new Gson().fromJson(array, listType);
     }
 
-    private void exportFile(List<SensorBase> lSensor, int id, String typeExercise, String typeExperiment, String identifier){
+    private void exportFile(List<SensorBase> lSensor, String sensorType, String typeExercise, String identifier){
         try {
 
-            String folderTypeExperiment = "Dataset";
-            if(!typeExperiment.equalsIgnoreCase(folderTypeExperiment)) {
-                folderTypeExperiment = "Experimento";
-            }
 
-            File folder = new File(Environment.getExternalStorageDirectory()+ "/FitRecognition/smatwatch");
+            File folder = new File(Environment.getExternalStorageDirectory()+ "/FitRecognition/smartwatch");
 
-            if (!folder.exists())
-                folder.mkdirs();
-            String SensorType = "";
-            if(id==1)
-                SensorType = "Accelerometer";
-            else if(id==2)
-                SensorType = "Gyroscope";
-            else
-                SensorType = "Magnetometer";
+            folder.mkdirs();
 
-
-            final String filename = folder.getAbsolutePath().toString() + "/"+identifier+"_"+folderTypeExperiment+"_"+ SensorType+"_"+ typeExercise+".csv";
-
-            String content="";
+            final String filename = folder.getAbsolutePath().toString() + "/"+identifier+"_Dataset_"+ sensorType+"_"+ typeExercise+".csv";
 
             FileOutputStream fOut = new FileOutputStream (new File(filename), true);
             OutputStreamWriter osw = new OutputStreamWriter(fOut);
             lastTime = null;
 
+            StringBuilder content = new StringBuilder();
             for( SensorBase sensorBase: lSensor){
 
                 for( int j=0; j<4; j++){
                     if( j==0)
-                        content+=sensorBase.getX().toString();
+                        content.append(sensorBase.getX().toString());
                     else if(j==1)
-                        content+=sensorBase.getY().toString();
+                        content.append(sensorBase.getY().toString());
                     else if(j==2)
-                        content+=sensorBase.getZ().toString();
+                        content.append(sensorBase.getZ().toString());
                     else if(j==3)
-                        content+=getDate(sensorBase.getTimestamp());
+                        content.append(getDate(sensorBase.getTimestamp()));
 
-
-                    content += "; ";
+                    content.append("; ");
                 }
-                if(!typeExperiment.equalsIgnoreCase("Dataset"))
-                    typeExercise = "?";
 
-                content= content+ typeExercise+"\n";
+                content.append(typeExercise+"\n");
 
             }
-            Log.v(SensorType+" content is ", content);
-            osw.write(content);
+            Log.v("Log","   Movimento: "+ typeExercise+" Sensor:"+sensorType+" content size "+ lSensor.size());
+            osw.write(content.toString());
             osw.flush();
             osw.close();
         }

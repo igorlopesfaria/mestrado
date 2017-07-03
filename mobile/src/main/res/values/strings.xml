@@ -5,6 +5,8 @@
     <string name="chester">Peito</string>
     <string name="shoulder">Ombro</string>
     <string name="back">Costas</string>
+    <string name="walk">Andar</string>
+    <string name="run">Correr</string>
     <string name="name">Identificador</string>
     <string name="select_experiment">Selecione a fase do Experimento</string>
     <string name="select_exercise">Selecione o tipo do Exercício</string>
